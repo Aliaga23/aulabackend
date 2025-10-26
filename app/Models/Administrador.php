@@ -87,9 +87,10 @@ class Administrador
         $sql = "
             SELECT a.codadministrador, a.fechacontrato,
                    u.id as userid, u.nombre, u.apellido, u.correo, u.ci, 
-                   u.telefono, u.sexo, u.direccion, u.activo
+                   u.telefono, u.sexo, u.direccion, u.activo, r.nombre as rol
             FROM administrador a
             INNER JOIN usuario u ON a.id = u.id
+            INNER JOIN roles r ON u.idrol = r.idrol
             WHERE u.activo = true
             ORDER BY u.nombre, u.apellido
         ";
