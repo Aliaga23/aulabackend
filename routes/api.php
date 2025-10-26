@@ -9,6 +9,7 @@ use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\GestionController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\CarreraController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -74,6 +75,15 @@ Route::middleware('jwt')->group(function () {
         Route::post('/', [PermisoController::class, 'store']);
         Route::put('/{id}', [PermisoController::class, 'update']);
         Route::delete('/{id}', [PermisoController::class, 'destroy']);
+    });
+
+    // Rutas para gestión de carreras
+    Route::prefix('carreras')->group(function () {
+        Route::get('/', [CarreraController::class, 'index']);
+        Route::get('/{id}', [CarreraController::class, 'show']);
+        Route::post('/', [CarreraController::class, 'store']);
+        Route::put('/{id}', [CarreraController::class, 'update']);
+        Route::delete('/{id}', [CarreraController::class, 'destroy']);
     });
     
     // Rutas para gestión de materias
