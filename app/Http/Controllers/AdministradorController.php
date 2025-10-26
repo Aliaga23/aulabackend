@@ -57,8 +57,11 @@ class AdministradorController extends Controller
                 'direccion' => $data['direccion'] ?? null
             ];
             
+            // Aceptar tanto fecha_contrato como fechacontrato
+            $fechaContrato = $data['fecha_contrato'] ?? $data['fechacontrato'] ?? date('Y-m-d');
+            
             $adminData = [
-                'fecha_contrato' => $data['fecha_contrato']
+                'fecha_contrato' => $fechaContrato
             ];
             
             // Crear administrador
@@ -113,6 +116,14 @@ class AdministradorController extends Controller
         try {
             $data = $request->all();
             
+            // Validar campos requeridos
+            $required = ['nombre', 'apellido'];
+            foreach ($required as $field) {
+                if (!isset($data[$field]) || empty($data[$field])) {
+                    return response()->json(['message' => "El campo {$field} es requerido"], 400);
+                }
+            }
+            
             // Preparar datos
             $userData = [
                 'nombre' => $data['nombre'],
@@ -123,8 +134,11 @@ class AdministradorController extends Controller
                 'activo' => $data['activo'] ?? true
             ];
             
+            // Aceptar tanto fecha_contrato como fechacontrato
+            $fechaContrato = $data['fecha_contrato'] ?? $data['fechacontrato'] ?? date('Y-m-d');
+            
             $adminData = [
-                'fecha_contrato' => $data['fecha_contrato']
+                'fecha_contrato' => $fechaContrato
             ];
             
             // Actualizar administrador
@@ -135,7 +149,7 @@ class AdministradorController extends Controller
             return response()->json($updated);
             
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error interno del servidor: ' . $e->getMessage()], 500);
         }
     }
     

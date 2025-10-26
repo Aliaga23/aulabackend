@@ -26,15 +26,15 @@ class Asignacion
                         dgm.idgestion,
                         dgm.idinfraestructura,
                         dgm.id,
-                        d.nombre AS nombre_docente,
-                        d.apellidop AS apellidop_docente,
-                        d.apellidom AS apellidom_docente,
+                        u.nombre AS nombre_docente,
+                        u.apellido AS apellido_docente,
                         m.nombre AS nombre_materia,
                         g.nombre AS nombre_grupo,
                         ge.gestion AS nombre_gestion,
                         c.nombre AS nombre_carrera
                     FROM docentegrupomateria dgm
                     LEFT JOIN docente d ON dgm.coddocente = d.coddocente
+                    LEFT JOIN usuario u ON d.userid = u.id
                     LEFT JOIN materia m ON dgm.idcarrera = m.idcarrera AND dgm.sigla = m.sigla
                     LEFT JOIN grupo g ON dgm.idgrupo = g.idgrupo
                     LEFT JOIN gestion ge ON dgm.idgestion = ge.idgestion

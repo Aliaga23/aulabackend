@@ -88,7 +88,7 @@ class Docente
         $sql = "
             SELECT d.coddocente, d.especialidad, d.fechacontrato,
                    u.id as userid, u.nombre, u.apellido, u.correo, u.ci, 
-                   u.telefono, u.sexo, u.direccion, u.activo, r.nombre as rol
+                   u.telefono, u.sexo, u.direccion, u.activo, u.idrol, r.nombre as rol
             FROM docente d
             INNER JOIN usuario u ON d.id = u.id
             INNER JOIN roles r ON u.idrol = r.idrol

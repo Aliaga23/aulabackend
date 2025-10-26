@@ -66,9 +66,12 @@ class DocenteController extends Controller
                 'direccion' => $data['direccion'] ?? null
             ];
             
+            // Aceptar tanto fecha_contrato como fechacontrato
+            $fechaContrato = $data['fecha_contrato'] ?? $data['fechacontrato'] ?? date('Y-m-d');
+            
             $docenteData = [
                 'especialidad' => $data['especialidad'] ?? null,
-                'fechacontrato' => $data['fechacontrato']
+                'fechacontrato' => $fechaContrato
             ];
             
             // Crear docente
@@ -125,6 +128,14 @@ class DocenteController extends Controller
         try {
             $data = $request->all();
             
+            // Validar campos requeridos
+            $required = ['nombre', 'apellido'];
+            foreach ($required as $field) {
+                if (!isset($data[$field]) || empty($data[$field])) {
+                    return response()->json(['message' => "El campo {$field} es requerido"], 400);
+                }
+            }
+            
             // Preparar datos
             $userData = [
                 'nombre' => $data['nombre'],
@@ -135,9 +146,12 @@ class DocenteController extends Controller
                 'activo' => $data['activo'] ?? true
             ];
             
+            // Aceptar tanto fecha_contrato como fechacontrato
+            $fechaContrato = $data['fecha_contrato'] ?? $data['fechacontrato'] ?? date('Y-m-d');
+            
             $docenteData = [
                 'especialidad' => $data['especialidad'] ?? null,
-                'fecha_contrato' => $data['fecha_contrato']
+                'fecha_contrato' => $fechaContrato
             ];
             
             // Actualizar docente
@@ -148,7 +162,7 @@ class DocenteController extends Controller
             return response()->json($updated);
             
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error interno del servidor: ' . $e->getMessage()], 500);
         }
     }
     
