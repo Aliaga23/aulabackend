@@ -78,9 +78,9 @@ class RoleController extends Controller
     {
         try {
             $this->roleModel->delete($id);
-            return response()->noContent();
+            return response()->json(['message' => 'Rol eliminado correctamente']);
         } catch (Exception $e) {
-            return response()->noContent(500);
+            return response()->json(['message' => 'Error interno del servidor'], 500);
         }
     }
 
@@ -105,7 +105,7 @@ class RoleController extends Controller
     {
         try {
             $this->roleModel->removerPermiso($idRol, $idPermiso);
-            return response()->noContent();
+            return response()->json(['message' => 'Permiso removido correctamente']);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error interno del servidor'], 500);
         }

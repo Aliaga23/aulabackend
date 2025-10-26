@@ -67,11 +67,12 @@ class GestionController extends Controller
             $required = ['anio','periodo','fechainicio','fechafin'];
             foreach ($required as $f) {
                 if (!isset($data[$f]) || $data[$f] === '') {
-                    return response()->noContent(400);
+                    return response()->json(['message' => 'Faltan campos requeridos'], 400);
                 }
             }
             $this->gestionModel->update($id, $data);
-            return response()->noContent();
+            $updated = $this->gestionModel->findById($id);
+            return response()->json($updated);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error interno del servidor'], 500);
         }
@@ -82,7 +83,7 @@ class GestionController extends Controller
     {
         try {
             $this->gestionModel->delete($id);
-            return response()->noContent();
+            return response()->json(['message' => 'Gestión eliminada correctamente']);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error interno del servidor'], 500);
         }

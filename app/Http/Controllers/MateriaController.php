@@ -66,10 +66,11 @@ class MateriaController extends Controller
         try {
             $data = $request->all();
             if (!isset($data['nombre']) || $data['nombre'] === '') {
-                return response()->noContent(400);
+                return response()->json(['message' => 'El nombre es requerido'], 400);
             }
             $this->materiaModel->update($idCarrera, $sigla, ['nombre' => $data['nombre']]);
-            return response()->noContent();
+            $updated = $this->materiaModel->findById($idCarrera, $sigla);
+            return response()->json($updated);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error interno del servidor'], 500);
         }
@@ -80,7 +81,7 @@ class MateriaController extends Controller
     {
         try {
             $this->materiaModel->delete($idCarrera, $sigla);
-            return response()->noContent();
+            return response()->json(['message' => 'Materia eliminada correctamente']);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error interno del servidor'], 500);
         }

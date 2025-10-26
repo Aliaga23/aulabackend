@@ -62,10 +62,11 @@ class GrupoController extends Controller
         try {
             $data = $request->all();
             if (!isset($data['nombre']) || $data['nombre'] === '') {
-                return response()->noContent(400);
+                return response()->json(['message' => 'El nombre es requerido'], 400);
             }
             $this->grupoModel->update($id, ['nombre' => $data['nombre']]);
-            return response()->noContent();
+            $updated = $this->grupoModel->findById($id);
+            return response()->json($updated);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error interno del servidor'], 500);
         }
@@ -76,7 +77,7 @@ class GrupoController extends Controller
     {
         try {
             $this->grupoModel->delete($id);
-            return response()->noContent();
+            return response()->json(['message' => 'Grupo eliminado correctamente']);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error interno del servidor'], 500);
         }

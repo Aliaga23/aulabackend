@@ -130,7 +130,9 @@ class AdministradorController extends Controller
             // Actualizar administrador
             $this->administradorModel->update($id, $userData, $adminData);
             
-            return response()->noContent();
+            // Obtener el administrador actualizado
+            $updated = $this->administradorModel->findById($id);
+            return response()->json($updated);
             
         } catch (Exception $e) {
             return response()->json(['message' => 'Error interno del servidor'], 500);
@@ -144,8 +146,7 @@ class AdministradorController extends Controller
     {
         try {
             $this->administradorModel->delete($id);
-            
-            return response()->noContent();
+            return response()->json(['message' => 'Administrador eliminado correctamente']);
             
         } catch (Exception $e) {
             return response()->json(['message' => 'Error interno del servidor'], 500);

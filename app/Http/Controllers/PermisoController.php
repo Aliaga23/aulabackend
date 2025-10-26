@@ -63,10 +63,11 @@ class PermisoController extends Controller
         try {
             $data = $request->all();
             if (!isset($data['nombre']) || empty($data['nombre'])) {
-                return response()->noContent(400);
+                return response()->json(['message' => 'El nombre es requerido'], 400);
             }
             $this->permisoModel->update($id, ['nombre' => $data['nombre']]);
-            return response()->noContent();
+            $updated = $this->permisoModel->findById($id);
+            return response()->json($updated);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error interno del servidor'], 500);
         }
@@ -77,9 +78,9 @@ class PermisoController extends Controller
     {
         try {
             $this->permisoModel->delete($id);
-            return response()->noContent();
+            return response()->json(['message' => 'Permiso eliminado correctamente']);
         } catch (Exception $e) {
-            return response()->noContent(500);
+            return response()->json(['message' => 'Error interno del servidor'], 500);
         }
     }
 }

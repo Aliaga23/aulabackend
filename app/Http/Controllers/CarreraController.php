@@ -58,10 +58,11 @@ class CarreraController extends Controller
         try {
             $data = $request->all();
             if (!isset($data['nombre']) || $data['nombre'] === '') {
-                return response()->noContent(400);
+                return response()->json(['message' => 'El nombre es requerido'], 400);
             }
             $this->carreraModel->update($id, ['nombre' => $data['nombre']]);
-            return response()->noContent();
+            $updated = $this->carreraModel->findById($id);
+            return response()->json($updated);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error interno del servidor'], 500);
         }
@@ -71,7 +72,7 @@ class CarreraController extends Controller
     {
         try {
             $this->carreraModel->delete($id);
-            return response()->noContent();
+            return response()->json(['message' => 'Carrera eliminada correctamente']);
         } catch (Exception $e) {
             return response()->json(['message' => 'Error interno del servidor'], 500);
         }

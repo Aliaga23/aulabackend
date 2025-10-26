@@ -143,8 +143,9 @@ class DocenteController extends Controller
             // Actualizar docente
             $this->docenteModel->update($id, $userData, $docenteData);
             
-            // Éxito sin cuerpo
-            return response()->noContent();
+            // Obtener el docente actualizado
+            $updated = $this->docenteModel->findById($id);
+            return response()->json($updated);
             
         } catch (Exception $e) {
             return response()->json(['message' => 'Error interno del servidor'], 500);
@@ -158,12 +159,10 @@ class DocenteController extends Controller
     {
         try {
             $this->docenteModel->delete($id);
-            
-            // Éxito sin cuerpo
-            return response()->noContent();
+            return response()->json(['message' => 'Docente eliminado correctamente']);
             
         } catch (Exception $e) {
-            return response()->noContent(500);
+            return response()->json(['message' => 'Error interno del servidor'], 500);
         }
     }
 }
