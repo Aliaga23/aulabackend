@@ -66,6 +66,12 @@ Route::middleware('jwt')->group(function () {
         Route::post('/', [RoleController::class, 'store']);
         Route::put('/{id}', [RoleController::class, 'update']);
         Route::delete('/{id}', [RoleController::class, 'destroy']);
+        
+        // Gestión de permisos del rol
+        Route::get('/{id}/permisos', [RoleController::class, 'getPermisos']);
+        Route::post('/{id}/permisos', [RoleController::class, 'asignarPermiso']);
+        Route::put('/{id}/permisos', [RoleController::class, 'sincronizarPermisos']);
+        Route::delete('/{id}/permisos/{idPermiso}', [RoleController::class, 'removerPermiso']);
     });
 
     // Rutas para gestión de permisos

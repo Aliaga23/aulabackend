@@ -82,4 +82,58 @@ class RoleController extends Controller
             return response()->noContent(500);
         }
     }
+
+    // Asignar permiso a rol
+    public function asignarPermiso(Request $request, $idRol): JsonResponse
+    {
+        try {
+            $data = $request->all();
+            if (!isset($data['idpermiso'])) {
+                return response()->json(['message' => 'ID de permiso requerido'], 400);
+            }
+
+            $resultado = $this->roleModel->asignarPermiso($idRol, $data['idpermiso']);
+            return response()->json($resultado);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error interno del servidor'], 500);
+        }
+    }
+
+    // Remover permiso de rol
+    public function removerPermiso($idRol, $idPermiso): JsonResponse
+    {
+        try {
+            $this->roleModel->removerPermiso($idRol, $idPermiso);
+            return response()->noContent();
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error interno del servidor'], 500);
+        }
+    }
+
+    // Obtener permisos de un rol
+    public function getPermisos($idRol): JsonResponse
+    {
+        try {
+            $permisos = $this->roleModel->getPermisosByRol($idRol);
+            return response()->json($permisos);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error interno del servidor'], 500);
+        }
+    }
+
+    // Sincronizar permisos (reemplazar todos los permisos de un rol)
+    public function sincronizarPermisos(Request $request, $idRol): JsonResponse
+    {
+        try {
+            $data = $request->all();
+            if (!isset($data['permisos']) || !is_array($data['permisos'])) {
+                return response()->json(['message' => 'Array de permisos requerido'], 400);
+            }
+
+            $this->roleModel->sincronizarPermisos($idRol, $data['permisos']);
+            return response()->json(['message' => 'Permisos sincronizados correctamente']);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error interno del servidor'], 500);
+        }
+    }
 }
