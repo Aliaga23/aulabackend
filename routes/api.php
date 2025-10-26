@@ -93,37 +93,30 @@ Route::middleware('jwt')->group(function () {
     });
     
     // Rutas para gestión de materias
-    Route::middleware('jwt:gestionar_materias')->group(function () {
-        Route::prefix('materias')->group(function () {
-            Route::get('/', [MateriaController::class, 'index']);
-            // Composite key in path: /api/materias/{idCarrera}/{sigla}
-            Route::get('/{idCarrera}/{sigla}', [MateriaController::class, 'show']);
-            Route::post('/', [MateriaController::class, 'store']);
-            Route::put('/{idCarrera}/{sigla}', [MateriaController::class, 'update']);
-            Route::delete('/{idCarrera}/{sigla}', [MateriaController::class, 'destroy']);
-        });
+    Route::prefix('materias')->group(function () {
+        Route::get('/', [MateriaController::class, 'index']);
+        Route::get('/{idCarrera}/{sigla}', [MateriaController::class, 'show']);
+        Route::post('/', [MateriaController::class, 'store']);
+        Route::put('/{idCarrera}/{sigla}', [MateriaController::class, 'update']);
+        Route::delete('/{idCarrera}/{sigla}', [MateriaController::class, 'destroy']);
     });
     
     // Rutas para gestión de grupos
-    Route::middleware('jwt:gestionar_grupos')->group(function () {
-        Route::prefix('grupos')->group(function () {
-            Route::get('/', [GrupoController::class, 'index']);
-            Route::get('/{id}', [GrupoController::class, 'show']);
-            Route::post('/', [GrupoController::class, 'store']);
-            Route::put('/{id}', [GrupoController::class, 'update']);
-            Route::delete('/{id}', [GrupoController::class, 'destroy']);
-        });
+    Route::prefix('grupos')->group(function () {
+        Route::get('/', [GrupoController::class, 'index']);
+        Route::get('/{id}', [GrupoController::class, 'show']);
+        Route::post('/', [GrupoController::class, 'store']);
+        Route::put('/{id}', [GrupoController::class, 'update']);
+        Route::delete('/{id}', [GrupoController::class, 'destroy']);
     });
 
     // Rutas para gestión de gestiones (periodos académicos)
-    Route::middleware('jwt:gestionar_gestiones')->group(function () {
-        Route::prefix('gestiones')->group(function () {
-            Route::get('/', [GestionController::class, 'index']);
-            Route::get('/{id}', [GestionController::class, 'show']);
-            Route::post('/', [GestionController::class, 'store']);
-            Route::put('/{id}', [GestionController::class, 'update']);
-            Route::delete('/{id}', [GestionController::class, 'destroy']);
-        });
+    Route::prefix('gestiones')->group(function () {
+        Route::get('/', [GestionController::class, 'index']);
+        Route::get('/{id}', [GestionController::class, 'show']);
+        Route::post('/', [GestionController::class, 'store']);
+        Route::put('/{id}', [GestionController::class, 'update']);
+        Route::delete('/{id}', [GestionController::class, 'destroy']);
     });
     
     // Rutas para gestión de horarios
@@ -142,6 +135,7 @@ Route::middleware('jwt')->group(function () {
 
     // Asignaciones: asignar docente a materia/grupo/gestión
     Route::prefix('asignaciones')->group(function () {
+        Route::get('/', [AsignacionController::class, 'index']);
         Route::post('/', [AsignacionController::class, 'store']);
     });
     

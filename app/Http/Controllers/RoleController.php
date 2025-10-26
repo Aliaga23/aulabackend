@@ -63,12 +63,13 @@ class RoleController extends Controller
         try {
             $data = $request->all();
             if (!isset($data['nombre']) || empty($data['nombre'])) {
-                return response()->noContent(400);
+                return response()->json(['message' => 'El nombre del rol es requerido'], 400);
             }
             $this->roleModel->update($id, ['nombre' => $data['nombre']]);
-            return response()->noContent();
+            $updated = $this->roleModel->findById($id);
+            return response()->json($updated);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error interno del servidor: ' . $e->getMessage()], 500);
         }
     }
 

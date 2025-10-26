@@ -14,6 +14,40 @@ class Asignacion
         $this->db = new DatabaseService();
     }
 
+    // Obtener todas las asignaciones con información de docente, materia, grupo y gestión
+    public function obtenerTodasAsignaciones()
+    {
+        try {
+            $sql = "SELECT 
+                        dgm.coddocente,
+                        dgm.idgrupo,
+                        dgm.idcarrera,
+                        dgm.sigla,
+                        dgm.idgestion,
+                        dgm.idinfraestructura,
+                        dgm.id,
+                        d.nombre AS nombre_docente,
+                        d.apellidop AS apellidop_docente,
+                        d.apellidom AS apellidom_docente,
+                        m.nombre AS nombre_materia,
+                        g.nombre AS nombre_grupo,
+                        ge.gestion AS nombre_gestion,
+                        c.nombre AS nombre_carrera
+                    FROM docentegrupomateria dgm
+                    LEFT JOIN docente d ON dgm.coddocente = d.coddocente
+                    LEFT JOIN materia m ON dgm.idcarrera = m.idcarrera AND dgm.sigla = m.sigla
+                    LEFT JOIN grupo g ON dgm.idgrupo = g.idgrupo
+                    LEFT JOIN gestion ge ON dgm.idgestion = ge.idgestion
+                    LEFT JOIN carrera c ON dgm.idcarrera = c.idcarrera
+                    ORDER BY dgm.idgestion DESC, dgm.idcarrera, dgm.sigla, dgm.idgrupo";
+            
+            $result = $this->db->query($sql, []);
+            return $this->db->fetchAll($result);
+        } catch (Exception $e) {
+            throw new Exception('Error al obtener asignaciones: ' . $e->getMessage());
+        }
+    }
+
     // Asignar un docente a una materia y grupo en una gestión
     public function asignarDocenteMateria(array $data)
     {

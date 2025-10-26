@@ -16,6 +16,17 @@ class AsignacionController extends Controller
         $this->asignacionModel = new Asignacion();
     }
 
+    // Obtener todas las asignaciones
+    public function index(): JsonResponse
+    {
+        try {
+            $asignaciones = $this->asignacionModel->obtenerTodasAsignaciones();
+            return response()->json($asignaciones);
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error al obtener asignaciones'], 500);
+        }
+    }
+
     // Asignar docente a materia
     public function store(Request $request): JsonResponse
     {
