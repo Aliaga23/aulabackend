@@ -21,7 +21,8 @@ class DatabaseService
         $username = env('DB_USERNAME');
         $password = env('DB_PASSWORD');
         
-        $connString = "host=$host port=$port dbname=$database user=$username password=$password sslmode=require";
+    $sslmode = env('DB_SSLMODE', 'prefer');
+    $connString = "host=$host port=$port dbname=$database user=$username password=$password sslmode=$sslmode";
         
         $this->connection = pg_connect($connString);
         
