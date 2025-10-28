@@ -28,7 +28,7 @@ class RoleController extends Controller
             $role = $this->roleModel->create(['nombre' => $data['nombre']]);
             return response()->json($role);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al crear rol: ' . $e->getMessage()], 500);
         }
     }
 
@@ -39,7 +39,7 @@ class RoleController extends Controller
             $roles = $this->roleModel->getAll();
             return response()->json($roles);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al obtener roles: ' . $e->getMessage()], 500);
         }
     }
 
@@ -53,7 +53,7 @@ class RoleController extends Controller
             }
             return response()->json($role);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al obtener rol: ' . $e->getMessage()], 500);
         }
     }
 
@@ -80,7 +80,7 @@ class RoleController extends Controller
             $this->roleModel->delete($id);
             return response()->json(['message' => 'Rol eliminado correctamente']);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al eliminar rol: ' . $e->getMessage()], 500);
         }
     }
 
@@ -96,7 +96,7 @@ class RoleController extends Controller
             $resultado = $this->roleModel->asignarPermiso($idRol, $data['idpermiso']);
             return response()->json($resultado);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al asignar permiso: ' . $e->getMessage()], 500);
         }
     }
 
@@ -107,7 +107,7 @@ class RoleController extends Controller
             $this->roleModel->removerPermiso($idRol, $idPermiso);
             return response()->json(['message' => 'Permiso removido correctamente']);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al remover permiso: ' . $e->getMessage()], 500);
         }
     }
 
@@ -118,7 +118,7 @@ class RoleController extends Controller
             $permisos = $this->roleModel->getPermisosByRol($idRol);
             return response()->json($permisos);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al obtener permisos del rol: ' . $e->getMessage()], 500);
         }
     }
 
@@ -134,7 +134,7 @@ class RoleController extends Controller
             $this->roleModel->sincronizarPermisos($idRol, $data['permisos']);
             return response()->json(['message' => 'Permisos sincronizados correctamente']);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al sincronizar permisos: ' . $e->getMessage()], 500);
         }
     }
 }

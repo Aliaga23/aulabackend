@@ -22,13 +22,19 @@ class PermisoController extends Controller
         try {
             $data = $request->all();
             if (!isset($data['nombre']) || empty($data['nombre'])) {
-                return response()->noContent(400);
+                return response()->json(['message' => 'El nombre del permiso es requerido'], 400);
+            }
+
+            // Validar que el nombre del permiso no exista
+            $existingPermiso = $this->permisoModel->findByName($data['nombre']);
+            if ($existingPermiso) {
+                return response()->json(['message' => 'Ya existe un permiso con este nombre'], 400);
             }
 
             $permiso = $this->permisoModel->create(['nombre' => $data['nombre']]);
             return response()->json($permiso);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al crear permiso: ' . $e->getMessage()], 500);
         }
     }
 
@@ -39,7 +45,7 @@ class PermisoController extends Controller
             $permisos = $this->permisoModel->getAll();
             return response()->json($permisos);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al obtener permisos: ' . $e->getMessage()], 500);
         }
     }
 
@@ -49,11 +55,11 @@ class PermisoController extends Controller
         try {
             $permiso = $this->permisoModel->findById($id);
             if (!$permiso) {
-                return response()->noContent(404);
+                return response()->json(['message' => 'Permiso no encontrado'], 404);
             }
             return response()->json($permiso);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al obtener permiso: ' . $e->getMessage()], 500);
         }
     }
 
@@ -63,13 +69,26 @@ class PermisoController extends Controller
         try {
             $data = $request->all();
             if (!isset($data['nombre']) || empty($data['nombre'])) {
-                return response()->json(['message' => 'El nombre es requerido'], 400);
+                return response()->json(['message' => 'El nombre del permiso es requerido'], 400);
             }
+
+            // Verificar que el permiso existe
+            $permiso = $this->permisoModel->findById($id);
+            if (!$permiso) {
+                return response()->json(['message' => 'Permiso no encontrado'], 404);
+            }
+
+            // Verificar que el nuevo nombre no esté en uso por otro permiso
+            $existingPermiso = $this->permisoModel->findByName($data['nombre']);
+            if ($existingPermiso && $existingPermiso['idpermiso'] != $id) {
+                return response()->json(['message' => 'Ya existe otro permiso con este nombre'], 400);
+            }
+
             $this->permisoModel->update($id, ['nombre' => $data['nombre']]);
             $updated = $this->permisoModel->findById($id);
             return response()->json($updated);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al actualizar permiso: ' . $e->getMessage()], 500);
         }
     }
 
@@ -77,10 +96,22 @@ class PermisoController extends Controller
     public function destroy($id): JsonResponse
     {
         try {
+            // Verificar que el permiso existe
+            $permiso = $this->permisoModel->findById($id);
+            if (!$permiso) {
+                return response()->json(['message' => 'Permiso no encontrado'], 404);
+            }
+
+            // Verificar que el permiso no esté siendo usado por roles
+            // (esto evitará errores de foreign key)
+            
             $this->permisoModel->delete($id);
             return response()->json(['message' => 'Permiso eliminado correctamente']);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            if (strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                return response()->json(['message' => 'No se puede eliminar el permiso porque está siendo usado por uno o más roles'], 400);
+            }
+            return response()->json(['message' => 'Error al eliminar permiso: ' . $e->getMessage()], 500);
         }
     }
 }

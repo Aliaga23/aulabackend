@@ -22,15 +22,22 @@ class GestionController extends Controller
         try {
             $data = $request->all();
             $required = ['anio','periodo','fechainicio','fechafin'];
+            
+            // Validar campos requeridos
             foreach ($required as $f) {
                 if (!isset($data[$f]) || $data[$f] === '') {
-                    return response()->noContent(400);
+                    return response()->json(['message' => 'Faltan campos requeridos'], 400);
                 }
             }
+            
             $gestion = $this->gestionModel->create($data);
             return response()->json($gestion);
+            
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            if (strpos($e->getMessage(), 'duplicate key') !== false || strpos($e->getMessage(), 'unique') !== false) {
+                return response()->json(['message' => 'Ya existe una gestión con estos datos'], 400);
+            }
+            return response()->json(['message' => 'Error al crear gestión: ' . $e->getMessage()], 500);
         }
     }
 
@@ -41,7 +48,7 @@ class GestionController extends Controller
             $gestiones = $this->gestionModel->getAll();
             return response()->json($gestiones);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al obtener la lista de gestiones: ' . $e->getMessage()], 500);
         }
     }
 
@@ -51,11 +58,11 @@ class GestionController extends Controller
         try {
             $gestion = $this->gestionModel->findById($id);
             if (!$gestion) {
-                return response()->json(['message' => 'No encontrado'], 404);
+                return response()->json(['message' => 'Gestión no encontrada'], 404);
             }
             return response()->json($gestion);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al obtener gestión: ' . $e->getMessage()], 500);
         }
     }
 
@@ -72,9 +79,17 @@ class GestionController extends Controller
             }
             $this->gestionModel->update($id, $data);
             $updated = $this->gestionModel->findById($id);
+            
+            if (!$updated) {
+                return response()->json(['message' => 'Gestión no encontrada'], 404);
+            }
+            
             return response()->json($updated);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            if (strpos($e->getMessage(), 'not found') !== false) {
+                return response()->json(['message' => 'Gestión no encontrada'], 404);
+            }
+            return response()->json(['message' => 'Error al actualizar gestión: ' . $e->getMessage()], 500);
         }
     }
 
@@ -85,7 +100,10 @@ class GestionController extends Controller
             $this->gestionModel->delete($id);
             return response()->json(['message' => 'Gestión eliminada correctamente']);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            if (strpos($e->getMessage(), 'foreign key') !== false) {
+                return response()->json(['message' => 'No se puede eliminar la gestión porque tiene asignaciones asociadas'], 400);
+            }
+            return response()->json(['message' => 'Error al eliminar gestión: ' . $e->getMessage()], 500);
         }
     }
 }

@@ -38,20 +38,34 @@ class DocenteController extends Controller
                 }
             }
             
+            // Validar formato de email
+            if (!filter_var($data['correo'], FILTER_VALIDATE_EMAIL)) {
+                return response()->json(['message' => 'El formato del email no es válido'], 400);
+            }
+
             // Validar email único
             if ($this->userModel->existsByEmail($data['correo'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El email ya está registrado'
-                ], 400);
+                return response()->json(['message' => 'Ya existe un usuario registrado con este email'], 400);
             }
             
             // Validar CI único
             if ($this->userModel->existsByCI($data['ci'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El CI ya está registrado'
-                ], 400);
+                return response()->json(['message' => 'Ya existe un usuario registrado con esta cédula de identidad'], 400);
+            }
+
+            // Validar longitud de contraseña
+            if (strlen($data['contrasena']) < 6) {
+                return response()->json(['message' => 'La contraseña debe tener al menos 6 caracteres'], 400);
+            }
+
+            // Validar fecha de contrato
+            $fechaContrato = $data['fecha_contrato'] ?? $data['fechacontrato'] ?? null;
+            if (!$fechaContrato) {
+                return response()->json(['message' => 'La fecha de contrato es requerida'], 400);
+            }
+            
+            if (!strtotime($fechaContrato)) {
+                return response()->json(['message' => 'La fecha de contrato no tiene un formato válido (YYYY-MM-DD)'], 400);
             }
             
             // Preparar datos
@@ -66,9 +80,6 @@ class DocenteController extends Controller
                 'direccion' => $data['direccion'] ?? null
             ];
             
-            // Aceptar tanto fecha_contrato como fechacontrato
-            $fechaContrato = $data['fecha_contrato'] ?? $data['fechacontrato'] ?? date('Y-m-d');
-            
             $docenteData = [
                 'especialidad' => $data['especialidad'] ?? null,
                 'fechacontrato' => $fechaContrato
@@ -81,7 +92,10 @@ class DocenteController extends Controller
             return response()->json($result);
             
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            if (strpos($e->getMessage(), 'duplicate key') !== false) {
+                return response()->json(['message' => 'Ya existe un docente con estos datos. Verifique email y cédula'], 400);
+            }
+            return response()->json(['message' => 'Error al crear docente: ' . $e->getMessage()], 500);
         }
     }
     
@@ -96,7 +110,7 @@ class DocenteController extends Controller
             return response()->json($docentes);
             
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al obtener la lista de docentes: ' . $e->getMessage()], 500);
         }
     }
     
@@ -109,14 +123,14 @@ class DocenteController extends Controller
             $docente = $this->docenteModel->findById($id);
             
             if (!$docente) {
-                return response()->noContent(404);
+                return response()->json(['message' => 'Docente no encontrado'], 404);
             }
             
             // Solo data
             return response()->json($docente);
             
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            return response()->json(['message' => 'Error al obtener docente: ' . $e->getMessage()], 500);
         }
     }
     
@@ -136,6 +150,39 @@ class DocenteController extends Controller
                 }
             }
             
+            // Validar formato de email si se está actualizando
+            if (isset($data['email']) && !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                return response()->json(['message' => 'El formato del email no es válido'], 400);
+            }
+            
+            // Validar formato de fecha de contrato
+            $fechaContrato = $data['fecha_contrato'] ?? $data['fechacontrato'] ?? null;
+            if ($fechaContrato && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaContrato)) {
+                return response()->json(['message' => 'La fecha de contrato no tiene un formato válido (YYYY-MM-DD)'], 400);
+            }
+            
+            // Validar unicidad de email si se está actualizando
+            if (isset($data['email'])) {
+                $existingUser = $this->databaseService->query(
+                    "SELECT id FROM users WHERE email = ? AND id != ?",
+                    [$data['email'], $id]
+                );
+                if ($existingUser) {
+                    return response()->json(['message' => 'Ya existe otro usuario con este email'], 400);
+                }
+            }
+            
+            // Validar unicidad de CI si se está actualizando
+            if (isset($data['ci'])) {
+                $existingUser = $this->databaseService->query(
+                    "SELECT id FROM users WHERE ci = ? AND id != ?",
+                    [$data['ci'], $id]
+                );
+                if ($existingUser) {
+                    return response()->json(['message' => 'Ya existe otro usuario con esta cédula de identidad'], 400);
+                }
+            }
+            
             // Preparar datos
             $userData = [
                 'nombre' => $data['nombre'],
@@ -146,12 +193,17 @@ class DocenteController extends Controller
                 'activo' => $data['activo'] ?? true
             ];
             
-            // Aceptar tanto fecha_contrato como fechacontrato
-            $fechaContrato = $data['fecha_contrato'] ?? $data['fechacontrato'] ?? date('Y-m-d');
+            // Agregar email y CI solo si se proporcionan
+            if (isset($data['email'])) {
+                $userData['email'] = $data['email'];
+            }
+            if (isset($data['ci'])) {
+                $userData['ci'] = $data['ci'];
+            }
             
             $docenteData = [
                 'especialidad' => $data['especialidad'] ?? null,
-                'fecha_contrato' => $fechaContrato
+                'fecha_contrato' => $fechaContrato ?: date('Y-m-d')
             ];
             
             // Actualizar docente
@@ -159,10 +211,21 @@ class DocenteController extends Controller
             
             // Obtener el docente actualizado
             $updated = $this->docenteModel->findById($id);
+            
+            if (!$updated) {
+                return response()->json(['message' => 'Docente no encontrado después de la actualización'], 404);
+            }
+            
             return response()->json($updated);
             
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor: ' . $e->getMessage()], 500);
+            if (strpos($e->getMessage(), 'not found') !== false || strpos($e->getMessage(), 'No data found') !== false) {
+                return response()->json(['message' => 'Docente no encontrado'], 404);
+            }
+            if (strpos($e->getMessage(), 'duplicate key') !== false) {
+                return response()->json(['message' => 'Ya existe un docente con estos datos. Verifique email y cédula'], 400);
+            }
+            return response()->json(['message' => 'Error al actualizar docente: ' . $e->getMessage()], 500);
         }
     }
     
@@ -172,11 +235,35 @@ class DocenteController extends Controller
     public function destroy($id): JsonResponse
     {
         try {
+            // Verificar si el docente existe
+            $docente = $this->docenteModel->findById($id);
+            if (!$docente) {
+                return response()->json(['message' => 'Docente no encontrado'], 404);
+            }
+            
+            // Verificar si tiene asignaciones activas
+            $asignaciones = $this->databaseService->query(
+                "SELECT COUNT(*) as count FROM asignacions WHERE docente_id = ? AND activo = true",
+                [$id]
+            );
+            
+            if ($asignaciones && $asignaciones['count'] > 0) {
+                return response()->json([
+                    'message' => 'No se puede eliminar el docente porque tiene asignaciones activas. Desactive las asignaciones primero.'
+                ], 400);
+            }
+            
             $this->docenteModel->delete($id);
             return response()->json(['message' => 'Docente eliminado correctamente']);
             
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            if (strpos($e->getMessage(), 'not found') !== false || strpos($e->getMessage(), 'No data found') !== false) {
+                return response()->json(['message' => 'Docente no encontrado'], 404);
+            }
+            if (strpos($e->getMessage(), 'foreign key') !== false || strpos($e->getMessage(), 'constraint') !== false) {
+                return response()->json(['message' => 'No se puede eliminar el docente porque está siendo referenciado por otros registros'], 400);
+            }
+            return response()->json(['message' => 'Error al eliminar docente: ' . $e->getMessage()], 500);
         }
     }
 }

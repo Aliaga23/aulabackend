@@ -23,7 +23,7 @@ class AsignacionController extends Controller
             $asignaciones = $this->asignacionModel->obtenerTodasAsignaciones();
             return response()->json($asignaciones);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error al obtener asignaciones'], 500);
+            return response()->json(['message' => 'Error al obtener asignaciones: ' . $e->getMessage()], 500);
         }
     }
 
@@ -33,16 +33,25 @@ class AsignacionController extends Controller
         try {
             $data = $request->all();
             $required = ['coddocente','idgrupo','idcarrera','sigla','idgestion'];
+            
+            // Validar campos requeridos
             foreach ($required as $f) {
                 if (!isset($data[$f]) || $data[$f] === '') {
-                    return response()->noContent(400);
+                    return response()->json(['message' => 'Faltan campos requeridos para la asignación'], 400);
                 }
             }
 
             $asignacion = $this->asignacionModel->asignarDocenteMateria($data);
             return response()->json($asignacion);
+            
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error interno del servidor'], 500);
+            if (strpos($e->getMessage(), 'duplicate key') !== false) {
+                return response()->json(['message' => 'El docente ya está asignado a esta materia y grupo'], 400);
+            }
+            if (strpos($e->getMessage(), 'foreign key') !== false) {
+                return response()->json(['message' => 'Datos inválidos: verifique docente, grupo, materia o gestión'], 400);
+            }
+            return response()->json(['message' => 'Error al crear asignación: ' . $e->getMessage()], 500);
         }
     }
 }
