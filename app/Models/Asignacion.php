@@ -14,7 +14,7 @@ class Asignacion
         $this->db = new DatabaseService();
     }
 
-    // Obtener todas las asignaciones con información de docente, materia, grupo y gestión
+    // Obtener todas las asignaciones con información de docente, materia, grupo y gestión lean bien
     public function obtenerTodasAsignaciones()
     {
         try {
